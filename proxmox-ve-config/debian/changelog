@@ -1,3 +1,9 @@
+rust-proxmox-ve-config (0.4.7) trixie; urgency=medium
+
+  * update proxmox-network-types from 0.1 to 1.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 19 Feb 2026 18:26:45 +0100
+
 rust-proxmox-ve-config (0.4.6) trixie; urgency=medium
 
   * firewall: introduce iptables to nftables mapping for icmp-types and
