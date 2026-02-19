@@ -27,7 +27,7 @@ Multi-Arch: same
 Depends:
  ${misc:Depends},
  librust-anyhow-1+default-dev,
- librust-proxmox-network-types-1+default-dev (>= 1.0.1-~~) <!nocheck>,
+ librust-proxmox-network-types-1+default-dev (>= 1.0.1-~~),
  librust-proxmox-sdn-types-0.1+default-dev,
  librust-serde-1+default-dev,
  librust-serde-1+derive-dev,
@@ -40,7 +40,7 @@ Provides:
  librust-proxmox-frr-0+default-dev (= ${binary:Version}),
  librust-proxmox-frr-0.2-dev (= ${binary:Version}),
  librust-proxmox-frr-0.2+default-dev (= ${binary:Version}),
- librust-proxmox-frr-0.2.0-dev (= ${binary:Version}),
- librust-proxmox-frr-0.2.0+default-dev (= ${binary:Version})
+ librust-proxmox-frr-0.2.1-dev (= ${binary:Version}),
+ librust-proxmox-frr-0.2.1+default-dev (= ${binary:Version})
 Description: Rust types for the FRR configuration file - Rust source code
  Source code for Debianized Rust crate "proxmox-frr"

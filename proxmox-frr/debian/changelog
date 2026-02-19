@@ -1,3 +1,9 @@
+rust-proxmox-frr (0.2.1-1) trixie; urgency=medium
+
+  * update proxmox-network-types from 0.1 to 1.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 19 Feb 2026 18:24:07 +0100
+
 rust-proxmox-frr (0.2.0-1) trixie; urgency=medium
 
   * add deserialization types for openfabric and ospf
