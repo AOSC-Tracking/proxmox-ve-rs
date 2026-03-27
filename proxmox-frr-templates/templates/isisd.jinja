@@ -1,0 +1,34 @@
+{% from "interface.jinja" import interface %}
+{% for router_name, router_config in isis.router|items %}
+!
+router isis {{ router_name }}
+ net {{ router_config.net }}
+{% if router_config.redistribute %}
+{% if router_config.redistribute.ipv4_connected %}
+ redistribute ipv4 connected {{ router_config.redistribute.ipv4_connected }}
+{% endif %}
+{% if router_config.redistribute.ipv6_connected %}
+ redistribute ipv6 connected {{ router_config.redistribute.ipv6_connected }}
+{% endif %}
+{% endif %}
+{% if router_config.log_adjacency_changes %}
+ log-adjacency-changes
+{% endif %}
+{% for line in router_config.custom_frr_config %}
+{{ line }}
+{% endfor %}
+exit
+{% endfor %}
+{% for interface_name, interface_config in isis.interfaces|items %}
+{% call interface(interface_name, interface_config.addresses_v4, interface_config.addresses_v6) %}
+{% if interface_config.domain and interface_config.is_ipv4 %}
+ ip router isis {{ interface_config.domain }}
+{% endif %}
+{% if interface_config.domain and interface_config.is_ipv6 %}
+ ipv6 router isis {{ interface_config.domain }}
+{% endif %}
+{% for line in interface_config.custom_frr_config %}
+{{ line }}
+{% endfor %}
+{% endcall %}
+{% endfor %}

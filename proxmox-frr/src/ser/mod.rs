@@ -1,3 +1,4 @@
+pub mod isis;
 pub mod openfabric;
 pub mod ospf;
 pub mod route_map;
@@ -191,6 +192,9 @@ pub struct FrrConfig {
     #[serde(default)]
     pub ospf: OspfFrrConfig,
     #[serde(default)]
+    pub isis: IsisFrrConfig,
+
+    #[serde(default)]
     pub protocol_routemaps: BTreeMap<FrrProtocol, IpProtocolRouteMap>,
     #[serde(default)]
     pub routemaps: BTreeMap<RouteMapName, Vec<RouteMapEntry>>,
@@ -204,6 +208,14 @@ pub struct OpenfabricFrrConfig {
     pub router: BTreeMap<openfabric::OpenfabricRouterName, openfabric::OpenfabricRouter>,
     #[serde(default)]
     pub interfaces: BTreeMap<InterfaceName, Interface<openfabric::OpenfabricInterface>>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct IsisFrrConfig {
+    #[serde(default)]
+    pub router: BTreeMap<isis::IsisRouterName, isis::IsisRouter>,
+    #[serde(default)]
+    pub interfaces: BTreeMap<InterfaceName, Interface<isis::IsisInterface>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]

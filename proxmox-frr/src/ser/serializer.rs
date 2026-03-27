@@ -5,10 +5,14 @@ use crate::ser::FrrConfig;
 use proxmox_sortable_macro::sortable;
 
 #[sortable]
-pub static TEMPLATES: [(&str, &str); 7] = sorted!([
+pub static TEMPLATES: [(&str, &str); 8] = sorted!([
     (
         "fabricd.jinja",
         include_str!("/usr/share/proxmox-frr/templates/fabricd.jinja"),
+    ),
+    (
+        "isisd.jinja",
+        include_str!("/usr/share/proxmox-frr/templates/isisd.jinja")
     ),
     (
         "ospfd.jinja",
