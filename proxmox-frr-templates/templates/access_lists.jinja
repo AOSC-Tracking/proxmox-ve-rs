@@ -1,6 +1,6 @@
 {% for access_list_name, access_list in access_lists | items %}
 !
 {%  for rule in access_list %}
-{{ "ipv6 " if rule.is_ipv6 }}access-list {{ access_list_name }} {{ ("seq " ~ rule.seq ~ " ") if rule.seq }}{{ rule.action }} {{ rule.network }}
+{{ "ipv6 " if rule.is_ipv6 else "" }}access-list {{ access_list_name }} {{ ("seq " ~ rule.seq ~ " ") if rule.seq else "" }}{{ rule.action }} {{ rule.network }}
 {%  endfor%}
 {% endfor %}

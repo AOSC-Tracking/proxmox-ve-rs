@@ -1,6 +1,6 @@
 {% for name, prefix_list in prefix_lists | items %}
 !
 {%  for rule in prefix_list %}
-{{ "ipv6" if rule.is_ipv6 else "ip" }} prefix-list {{ name }} {{ ("seq " ~ rule.seq ~ " ") if rule.seq }}{{ rule.action }} {{ rule.network }}{{ (" le " ~ rule.le) if rule.le }}{{ (" ge " ~ rule.ge) if rule.ge }}
+{{ "ipv6" if rule.is_ipv6 else "ip" }} prefix-list {{ name }} {{ ("seq " ~ rule.seq ~ " ") if rule.seq else "" }}{{ rule.action }} {{ rule.network }}{{ (" le " ~ rule.le) if rule.le else "" }}{{ (" ge " ~ rule.ge) if rule.ge else "" }}
 {% endfor %}
 {% endfor %}

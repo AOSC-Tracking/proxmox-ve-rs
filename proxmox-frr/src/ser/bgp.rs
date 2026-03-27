@@ -118,15 +118,9 @@ pub struct RouteTargets {
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct AddressFamilyNeighbor {
     pub name: String,
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "proxmox_serde::perl::deserialize_bool"
-    )]
+    #[serde(default, deserialize_with = "proxmox_serde::perl::deserialize_bool")]
     pub soft_reconfiguration_inbound: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub route_map_in: Option<RouteMapName>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub route_map_out: Option<RouteMapName>,
 }
 
@@ -142,11 +136,8 @@ pub struct CommonAddressFamilyOptions {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, Default)]
 pub struct AddressFamilies {
-    #[serde(skip_serializing_if = "Option::is_none")]
     ipv4_unicast: Option<Ipv4UnicastAF>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     ipv6_unicast: Option<Ipv6UnicastAF>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     l2vpn_evpn: Option<L2vpnEvpnAF>,
 }
 

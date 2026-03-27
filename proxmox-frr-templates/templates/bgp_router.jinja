@@ -65,7 +65,7 @@
 {% endfor %}
 {{ address_family_common(router_config.address_families.ipv4_unicast) -}}
 {% for redistribute in router_config.address_families.ipv4_unicast.redistribute %}
-  redistribute {{ redistribute.protocol }}{{ (" metric " ~ redistribute.metric) if redistribute.metric }}{{ (" route-map " ~ redistribute.route_map) if redistribute.route_map }}
+  redistribute {{ redistribute.protocol }}{{ (" metric " ~ redistribute.metric) if redistribute.metric else "" }}{{ (" route-map " ~ redistribute.route_map) if redistribute.route_map else "" }}
 {% endfor %}
 {% for line in router_config.address_families.ipv4_unicast.custom_frr_config %}
 {{ line }}
@@ -80,7 +80,7 @@
 {% endfor %}
 {{ address_family_common(router_config.address_families.ipv6_unicast) -}}
 {% for redistribute in router_config.address_families.ipv6_unicast.redistribute %}
-  redistribute {{ redistribute.protocol }}{{ (" metric " ~ redistribute.metric) if redistribute.metric }}{{ (" route-map " ~ redistribute.route_map) if redistribute.route_map }}
+  redistribute {{ redistribute.protocol }}{{ (" metric " ~ redistribute.metric) if redistribute.metric else "" }}{{ (" route-map " ~ redistribute.route_map) if redistribute.route_map else "" }}
 {% endfor %}
 {% for line in router_config.address_families.ipv6_unicast.custom_frr_config %}
 {{ line }}

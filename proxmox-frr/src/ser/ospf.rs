@@ -100,12 +100,8 @@ pub enum NetworkType {
 pub struct OspfInterface {
     // Note: an interface can only be a part of a single area(so no vec needed here)
     pub area: Area,
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "proxmox_serde::perl::deserialize_bool"
-    )]
+    #[serde(default, deserialize_with = "proxmox_serde::perl::deserialize_bool")]
     pub passive: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub network_type: Option<NetworkType>,
 }

@@ -26,7 +26,7 @@ pub enum AccessAction {
 pub struct AccessListRule {
     pub action: AccessAction,
     pub network: Cidr,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub seq: Option<u32>,
     #[serde(deserialize_with = "proxmox_serde::perl::deserialize_bool")]
     pub is_ipv6: bool,
@@ -136,6 +136,6 @@ pub struct RouteMapEntry {
     pub matches: Vec<RouteMapMatch>,
     #[serde(default)]
     pub sets: Vec<RouteMapSet>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub custom_frr_config: Vec<String>,
 }

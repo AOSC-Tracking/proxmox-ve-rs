@@ -59,6 +59,8 @@ pub static TEMPLATES: [(&str, &str); 12] = sorted!([
 fn create_env<'a>() -> Environment<'a> {
     let mut env = Environment::new();
 
+    env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
+
     // avoid unnecessary additional newlines
     env.set_trim_blocks(true);
     env.set_lstrip_blocks(true);

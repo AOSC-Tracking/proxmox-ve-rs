@@ -62,17 +62,13 @@ impl OpenfabricRouter {
 pub struct OpenfabricInterface {
     // Note: an interface can only be a part of a single fabric (so no vec needed here)
     pub fabric_id: OpenfabricRouterName,
-    #[serde(
-        default,
-        deserialize_with = "proxmox_serde::perl::deserialize_bool",
-        skip_serializing_if = "Option::is_none"
-    )]
+    #[serde(default, deserialize_with = "proxmox_serde::perl::deserialize_bool")]
     pub passive: Option<bool>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub hello_interval: Option<proxmox_sdn_types::openfabric::HelloInterval>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub csnp_interval: Option<proxmox_sdn_types::openfabric::CsnpInterval>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
     pub hello_multiplier: Option<proxmox_sdn_types::openfabric::HelloMultiplier>,
     #[serde(deserialize_with = "proxmox_serde::perl::deserialize_bool")]
     pub is_ipv4: bool,

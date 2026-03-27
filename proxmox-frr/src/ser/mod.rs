@@ -126,9 +126,9 @@ impl InterfaceName {
 pub struct Interface<T> {
     // We can't use `Cidr` because then the template doesn't know if it's IPv6
     // or IPv4, and we need to prefix the FRR command with either "ipv6 ip" or "ip"
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub addresses_v4: Vec<Ipv4Cidr>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default)]
     pub addresses_v6: Vec<Ipv6Cidr>,
 
     #[serde(flatten)]
