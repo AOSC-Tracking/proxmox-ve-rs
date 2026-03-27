@@ -5,18 +5,26 @@ use crate::ser::FrrConfig;
 use proxmox_sortable_macro::sortable;
 
 #[sortable]
-pub static TEMPLATES: [(&str, &str); 8] = sorted!([
+pub static TEMPLATES: [(&str, &str); 12] = sorted!([
     (
         "fabricd.jinja",
         include_str!("/usr/share/proxmox-frr/templates/fabricd.jinja"),
     ),
     (
+        "bgpd.jinja",
+        include_str!("/usr/share/proxmox-frr/templates/bgpd.jinja")
+    ),
+    (
         "isisd.jinja",
-        include_str!("/usr/share/proxmox-frr/templates/isisd.jinja")
+        include_str!("/usr/share/proxmox-frr/templates/isisd.jinja"),
     ),
     (
         "ospfd.jinja",
         include_str!("/usr/share/proxmox-frr/templates/ospfd.jinja"),
+    ),
+    (
+        "bgp_router.jinja",
+        include_str!("/usr/share/proxmox-frr/templates/bgp_router.jinja"),
     ),
     (
         "interface.jinja",
@@ -27,8 +35,16 @@ pub static TEMPLATES: [(&str, &str); 8] = sorted!([
         include_str!("/usr/share/proxmox-frr/templates/access_lists.jinja"),
     ),
     (
+        "prefix_lists.jinja",
+        include_str!("/usr/share/proxmox-frr/templates/prefix_lists.jinja"),
+    ),
+    (
         "route_maps.jinja",
         include_str!("/usr/share/proxmox-frr/templates/route_maps.jinja"),
+    ),
+    (
+        "ip_routes.jinja",
+        include_str!("/usr/share/proxmox-frr/templates/ip_routes.jinja"),
     ),
     (
         "protocol_routemaps.jinja",

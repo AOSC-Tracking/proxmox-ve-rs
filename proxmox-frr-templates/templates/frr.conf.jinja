@@ -1,4 +1,6 @@
+{% include "bgpd.jinja" %}
 {% include "isisd.jinja" %}
+{% include "prefix_lists.jinja" %}
 {% for line in custom_frr_config %}
 {{ line }}
 {% endfor %}
@@ -6,4 +8,5 @@
 {% include "ospfd.jinja" %}
 {% include "access_lists.jinja" %}
 {% include "route_maps.jinja" %}
+{% include "ip_routes.jinja" %}
 {% include "protocol_routemaps.jinja" %}

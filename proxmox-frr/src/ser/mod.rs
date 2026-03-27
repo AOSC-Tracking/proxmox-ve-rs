@@ -1,3 +1,4 @@
+pub mod bgp;
 pub mod isis;
 pub mod openfabric;
 pub mod ospf;
@@ -8,7 +9,9 @@ use std::collections::BTreeMap;
 use std::net::IpAddr;
 use std::str::FromStr;
 
-use crate::ser::route_map::{AccessListName, AccessListRule, RouteMapEntry, RouteMapName};
+use crate::ser::route_map::{
+    AccessListName, AccessListRule, PrefixListName, PrefixListRule, RouteMapEntry, RouteMapName,
+};
 
 use proxmox_network_types::{
     ip_address::{Ipv4Cidr, Ipv6Cidr},
@@ -181,6 +184,14 @@ pub struct IpProtocolRouteMap {
     pub v6: Option<RouteMapName>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum VrfName {
+    #[serde(rename = "default")]
+    Default,
+    #[serde(untagged)]
+    Custom(String),
+}
+
 /// Main FRR config.
 ///
 /// Contains the two main frr building blocks: routers and interfaces. It also holds other
@@ -192,14 +203,21 @@ pub struct FrrConfig {
     #[serde(default)]
     pub ospf: OspfFrrConfig,
     #[serde(default)]
+    pub bgp: BgpFrrConfig,
+    #[serde(default)]
     pub isis: IsisFrrConfig,
 
+    #[serde(default)]
+    pub ip_routes: Vec<IpRoute>,
     #[serde(default)]
     pub protocol_routemaps: BTreeMap<FrrProtocol, IpProtocolRouteMap>,
     #[serde(default)]
     pub routemaps: BTreeMap<RouteMapName, Vec<RouteMapEntry>>,
     #[serde(default)]
     pub access_lists: BTreeMap<AccessListName, Vec<AccessListRule>>,
+    #[serde(default)]
+    pub prefix_lists: BTreeMap<PrefixListName, Vec<PrefixListRule>>,
+
     #[serde(default)]
     pub custom_frr_config: Vec<String>,
 }
@@ -226,4 +244,15 @@ pub struct OspfFrrConfig {
     pub router: Option<ospf::OspfRouter>,
     #[serde(default)]
     pub interfaces: BTreeMap<InterfaceName, Interface<ospf::OspfInterface>>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct BgpFrrConfig {
+    #[serde(default)]
+    pub vrf_router: BTreeMap<VrfName, bgp::BgpRouter>,
+    #[serde(default)]
+    pub view_router: BTreeMap<u32, bgp::BgpRouter>,
+
+    #[serde(default)]
+    pub vrfs: BTreeMap<InterfaceName, bgp::Vrf>,
 }

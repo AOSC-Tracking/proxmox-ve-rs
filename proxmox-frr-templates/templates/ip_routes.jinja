@@ -1,0 +1,8 @@
+{% for ip_route in ip_routes %}
+!
+{% if ip_route.vrf %}
+{{ "ipv6" if ip_route.is_ipv6 else "ip" }} route {{ ip_route.prefix }} {{ ip_route.via }} {{ ip_route.vrf }}
+{% else %}
+{{ "ipv6" if ip_route.is_ipv6 else "ip" }} route {{ ip_route.prefix }} {{ ip_route.via }}
+{% endif %}
+{% endfor %}

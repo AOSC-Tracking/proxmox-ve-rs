@@ -1,0 +1,35 @@
+{% from "bgp_router.jinja" import bgp_router %}
+{% for vrf_name, vrf in bgp.vrfs|items %}
+!
+vrf {{ vrf_name }}
+{% if vrf.vni %}
+ vni {{ vrf.vni }}
+{% endif %}
+{% for ip_route in vrf.ip_routes %}
+{% if ip_route.vrf %}
+ {{ "ipv6" if ip_route.is_ipv6 else "ip" }} route {{ ip_route.prefix }} {{ ip_route.via }} {{ ip_route.vrf }}
+{% else %}
+ {{ "ipv6" if ip_route.is_ipv6 else "ip" }} route {{ ip_route.prefix }} {{ ip_route.via }}
+{% endif %}
+{% endfor %}
+{% for line in vrf.custom_frr_config %}
+{{ line }}
+{% endfor %}
+exit-vrf
+{% endfor %}
+{% for vrf_name, router_config in bgp.vrf_router|items %}
+!
+{% if vrf_name == "default" %}
+router bgp {{ router_config.asn }}
+{% else %}
+router bgp {{ router_config.asn }} vrf {{ vrf_name }}
+{% endif %}
+{{ bgp_router(router_config) -}}
+exit
+{% endfor %}
+{% for view_id, router_config in bgp.view_router|items %}
+!
+router bgp {{ router_config.asn }} view {{ view_id }}
+{{ bgp_router(router_config) -}}
+exit
+{% endfor %}
