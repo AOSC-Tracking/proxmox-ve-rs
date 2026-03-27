@@ -1,31 +1,10 @@
 use std::fmt::Debug;
-use std::fmt::Display;
 use std::net::Ipv4Addr;
 
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 use crate::ser::{FrrWord, FrrWordError};
-
-/// The name of the ospf frr router.
-///
-/// We can only have a single ospf router (ignoring multiple invocations of the ospfd daemon)
-/// because the router-id needs to be the same between different routers on a single node.
-/// We can still have multiple fabrics by separating them using areas. Still, different areas have
-/// the same frr router, so the name of the router is just "ospf" in "router ospf".
-///
-/// This serializes roughly to:
-/// ```text
-/// router ospf
-/// !...
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct OspfRouterName;
-
-impl Display for OspfRouterName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ospf")
-    }
-}
 
 #[derive(Error, Debug)]
 pub enum AreaParsingError {
@@ -44,7 +23,7 @@ pub enum AreaParsingError {
 /// or "0" as an area, which then gets translated to "0.0.0.5" and "0.0.0.0" by FRR. We allow both
 /// a number or an ip-address. Note that the area "0" (or "0.0.0.0") is a special area - it creates
 /// a OSPF "backbone" area.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Area(FrrWord);
 
 impl TryFrom<FrrWord> for Area {
@@ -65,26 +44,13 @@ impl Area {
     }
 }
 
-impl Display for Area {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "area {}", self.0)
-    }
-}
-
 /// The OSPF router properties.
 ///
 /// Currently the only property of a OSPF router is the router_id. The router_id is used to
 /// differentiate between nodes and every node in the same area must have a different router_id.
 /// The router_id must also be the same on the different fabrics on the same node. The OSPFv2
 /// daemon only supports IPv4.
-/// Note that these properties also serialize with a space prefix (" ") as they are inside the OSPF
-/// router block. It serializes roughly to:
-///
-/// ```text
-/// router ospf
-///  router-id <ipv4-address>
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct OspfRouter {
     pub router_id: Ipv4Addr,
 }
@@ -112,14 +78,8 @@ pub enum OspfInterfaceError {
 /// The most important options here are Broadcast (which is the default) and PointToPoint.
 /// When PointToPoint is set, then the interface has to have a /32 address and will be treated as
 /// unnumbered.
-///
-/// This roughly serializes to:
-/// ```text
-/// ip ospf network point-to-point
-/// ! or
-/// ip ospf network broadcast
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum NetworkType {
     Broadcast,
     NonBroadcast,
@@ -132,34 +92,20 @@ pub enum NetworkType {
     PointToMultipoint,
 }
 
-impl Display for NetworkType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            NetworkType::Broadcast => write!(f, "broadcast"),
-            NetworkType::NonBroadcast => write!(f, "non-broadcast"),
-            NetworkType::PointToPoint => write!(f, "point-to-point"),
-            NetworkType::PointToMultipoint => write!(f, "point-to-multicast"),
-        }
-    }
-}
-
 /// The OSPF interface properties.
 ///
 /// The interface gets tied to its fabric by the area property and the FRR `ip ospf area <area>`
 /// command.
-///
-/// This serializes to:
-///
-/// ```text
-/// router ospf
-///  ip ospf area <area>
-///  ip ospf passive <value>
-///  ip ospf network <value>
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct OspfInterface {
     // Note: an interface can only be a part of a single area(so no vec needed here)
     pub area: Area,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "proxmox_serde::perl::deserialize_bool"
+    )]
     pub passive: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub network_type: Option<NetworkType>,
 }

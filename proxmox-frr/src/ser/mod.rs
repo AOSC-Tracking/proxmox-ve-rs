@@ -3,103 +3,19 @@ pub mod ospf;
 pub mod route_map;
 pub mod serializer;
 
-use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::Display;
+use std::collections::BTreeMap;
+use std::net::IpAddr;
 use std::str::FromStr;
 
-use crate::ser::route_map::{AccessList, ProtocolRouteMap, RouteMap};
+use crate::ser::route_map::{AccessListName, AccessListRule, RouteMapEntry, RouteMapName};
 
+use proxmox_network_types::{
+    ip_address::{Ipv4Cidr, Ipv6Cidr},
+    Cidr,
+};
+use proxmox_serde::forward_deserialize_to_from_str;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
-
-/// Generic FRR router.
-///
-/// This generic FRR router contains all the protocols that we implement.
-/// In FRR this is e.g.:
-/// ```text
-/// router openfabric test
-/// !....
-/// ! or
-/// router ospf
-/// !....
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum Router {
-    Openfabric(openfabric::OpenfabricRouter),
-    Ospf(ospf::OspfRouter),
-}
-
-impl From<openfabric::OpenfabricRouter> for Router {
-    fn from(value: openfabric::OpenfabricRouter) -> Self {
-        Router::Openfabric(value)
-    }
-}
-
-/// Generic FRR routername.
-///
-/// The variants represent different protocols. Some have `router <protocol> <name>`, others have
-/// `router <protocol> <process-id>`, some only have `router <protocol>`.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum RouterName {
-    Openfabric(openfabric::OpenfabricRouterName),
-    Ospf(ospf::OspfRouterName),
-}
-
-impl From<openfabric::OpenfabricRouterName> for RouterName {
-    fn from(value: openfabric::OpenfabricRouterName) -> Self {
-        Self::Openfabric(value)
-    }
-}
-
-impl Display for RouterName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Openfabric(r) => r.fmt(f),
-            Self::Ospf(r) => r.fmt(f),
-        }
-    }
-}
-
-/// The interface name is the same on ospf and openfabric, but it is an enum so that we can have
-/// two different entries in the btreemap. This allows us to have an interface in a ospf and
-/// openfabric fabric.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum InterfaceName {
-    Openfabric(CommonInterfaceName),
-    Ospf(CommonInterfaceName),
-}
-
-impl Display for InterfaceName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            InterfaceName::Openfabric(frr_word) => frr_word.fmt(f),
-            InterfaceName::Ospf(frr_word) => frr_word.fmt(f),
-        }
-    }
-}
-
-/// Generic FRR Interface.
-///
-/// In FRR config it looks like this:
-/// ```text
-/// interface <name>
-/// ! ...
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Interface {
-    Openfabric(openfabric::OpenfabricInterface),
-    Ospf(ospf::OspfInterface),
-}
-
-impl From<openfabric::OpenfabricInterface> for Interface {
-    fn from(value: openfabric::OpenfabricInterface) -> Self {
-        Self::Openfabric(value)
-    }
-}
-
-impl From<ospf::OspfInterface> for Interface {
-    fn from(value: ospf::OspfInterface) -> Self {
-        Self::Ospf(value)
-    }
-}
 
 #[derive(Error, Debug)]
 pub enum FrrWordError {
@@ -113,8 +29,10 @@ pub enum FrrWordError {
 ///
 /// Every string argument or value in FRR is an FrrWord. FrrWords must only contain ascii
 /// characters and must not have a whitespace.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct FrrWord(String);
+
+forward_deserialize_to_from_str!(FrrWord);
 
 impl FrrWord {
     pub fn new<T: AsRef<str> + Into<String>>(name: T) -> Result<Self, FrrWordError> {
@@ -144,12 +62,6 @@ impl FromStr for FrrWord {
     }
 }
 
-impl Display for FrrWord {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
 impl AsRef<str> for FrrWord {
     fn as_ref(&self) -> &str {
         &self.0
@@ -157,7 +69,7 @@ impl AsRef<str> for FrrWord {
 }
 
 #[derive(Error, Debug)]
-pub enum CommonInterfaceNameError {
+pub enum InterfaceNameError {
     #[error("interface name too long")]
     TooLong,
 }
@@ -166,76 +78,138 @@ pub enum CommonInterfaceNameError {
 ///
 /// FRR itself doesn't enforce any limits, but the kernel does. Linux only allows interface names
 /// to be a maximum of 16 bytes. This is enforced by this struct.
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct CommonInterfaceName(String);
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct InterfaceName(String);
 
-impl TryFrom<&str> for CommonInterfaceName {
-    type Error = CommonInterfaceNameError;
+impl TryFrom<&str> for InterfaceName {
+    type Error = InterfaceNameError;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::new(value)
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        Self::validate(s).map(Self::from_str_unchecked)
     }
 }
 
-impl TryFrom<String> for CommonInterfaceName {
-    type Error = CommonInterfaceNameError;
+impl TryFrom<String> for InterfaceName {
+    type Error = InterfaceNameError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        Self::new(value)
-    }
-}
-
-impl CommonInterfaceName {
-    pub fn new<T: AsRef<str> + Into<String>>(s: T) -> Result<Self, CommonInterfaceNameError> {
-        if s.as_ref().len() <= 15 {
-            Ok(Self(s.into()))
+        if Self::validate(&value).is_ok() {
+            Ok(Self::from_string_unchecked(value))
         } else {
-            Err(CommonInterfaceNameError::TooLong)
+            Err(InterfaceNameError::TooLong)
         }
     }
 }
 
-impl Display for CommonInterfaceName {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
+impl InterfaceName {
+    fn validate(s: &str) -> Result<&str, InterfaceNameError> {
+        if s.len() <= 15 {
+            Ok(s)
+        } else {
+            Err(InterfaceNameError::TooLong)
+        }
     }
+    fn from_string_unchecked(s: String) -> InterfaceName {
+        Self(s)
+    }
+
+    fn from_str_unchecked(s: &str) -> InterfaceName {
+        Self::from_string_unchecked(s.to_string())
+    }
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Deserialize)]
+pub struct Interface<T> {
+    // We can't use `Cidr` because then the template doesn't know if it's IPv6
+    // or IPv4, and we need to prefix the FRR command with either "ipv6 ip" or "ip"
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub addresses_v4: Vec<Ipv4Cidr>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub addresses_v6: Vec<Ipv6Cidr>,
+
+    #[serde(flatten)]
+    pub properties: T,
+}
+impl From<openfabric::OpenfabricInterface> for Interface<openfabric::OpenfabricInterface> {
+    fn from(value: openfabric::OpenfabricInterface) -> Self {
+        Interface {
+            addresses_v4: Vec::new(),
+            addresses_v6: Vec::new(),
+            properties: value,
+        }
+    }
+}
+
+impl From<ospf::OspfInterface> for Interface<ospf::OspfInterface> {
+    fn from(value: ospf::OspfInterface) -> Self {
+        Interface {
+            addresses_v4: Vec::new(),
+            addresses_v6: Vec::new(),
+            properties: value,
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum IpOrInterface {
+    Ip(IpAddr),
+    Interface(InterfaceName),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct IpRoute {
+    #[serde(default, deserialize_with = "proxmox_serde::perl::deserialize_bool")]
+    is_ipv6: bool,
+    prefix: Cidr,
+    via: IpOrInterface,
+    vrf: Option<InterfaceName>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FrrProtocol {
+    Ospf,
+    Openfabric,
+    Bgp,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct IpProtocolRouteMap {
+    pub v4: Option<RouteMapName>,
+    pub v6: Option<RouteMapName>,
 }
 
 /// Main FRR config.
 ///
 /// Contains the two main frr building blocks: routers and interfaces. It also holds other
-/// top-level FRR options, such as access-lists, router-maps and protocol-routemaps. This struct
-/// gets generated using the `FrrConfigBuilder` in `proxmox-ve-config`.
-#[derive(Clone, Debug, PartialEq, Eq, Default)]
+/// top-level FRR options, such as access-lists, router-maps and protocol-routemaps.
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct FrrConfig {
-    pub router: BTreeMap<RouterName, Router>,
-    pub interfaces: BTreeMap<InterfaceName, Interface>,
-    pub access_lists: Vec<AccessList>,
-    pub routemaps: Vec<RouteMap>,
-    pub protocol_routemaps: BTreeSet<ProtocolRouteMap>,
+    #[serde(default)]
+    pub openfabric: OpenfabricFrrConfig,
+    #[serde(default)]
+    pub ospf: OspfFrrConfig,
+    #[serde(default)]
+    pub protocol_routemaps: BTreeMap<FrrProtocol, IpProtocolRouteMap>,
+    #[serde(default)]
+    pub routemaps: BTreeMap<RouteMapName, Vec<RouteMapEntry>>,
+    #[serde(default)]
+    pub access_lists: BTreeMap<AccessListName, Vec<AccessListRule>>,
 }
 
-impl FrrConfig {
-    pub fn new() -> Self {
-        Self::default()
-    }
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct OpenfabricFrrConfig {
+    #[serde(default)]
+    pub router: BTreeMap<openfabric::OpenfabricRouterName, openfabric::OpenfabricRouter>,
+    #[serde(default)]
+    pub interfaces: BTreeMap<InterfaceName, Interface<openfabric::OpenfabricInterface>>,
+}
 
-    pub fn router(&self) -> impl Iterator<Item = (&RouterName, &Router)> + '_ {
-        self.router.iter()
-    }
-
-    pub fn interfaces(&self) -> impl Iterator<Item = (&InterfaceName, &Interface)> + '_ {
-        self.interfaces.iter()
-    }
-
-    pub fn access_lists(&self) -> impl Iterator<Item = &AccessList> + '_ {
-        self.access_lists.iter()
-    }
-    pub fn routemaps(&self) -> impl Iterator<Item = &RouteMap> + '_ {
-        self.routemaps.iter()
-    }
-
-    pub fn protocol_routemaps(&self) -> impl Iterator<Item = &ProtocolRouteMap> + '_ {
-        self.protocol_routemaps.iter()
-    }
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct OspfFrrConfig {
+    #[serde(default)]
+    pub router: Option<ospf::OspfRouter>,
+    #[serde(default)]
+    pub interfaces: BTreeMap<InterfaceName, Interface<ospf::OspfInterface>>,
 }

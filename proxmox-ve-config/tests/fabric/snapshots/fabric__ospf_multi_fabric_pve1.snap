@@ -3,6 +3,7 @@ source: proxmox-ve-config/tests/fabric/main.rs
 expression: output
 snapshot_kind: text
 ---
+!
 router ospf
  ospf router-id 192.168.1.9
 exit
@@ -42,4 +43,3 @@ route-map pve_ospf permit 110
 exit
 !
 ip protocol ospf route-map pve_ospf
-!

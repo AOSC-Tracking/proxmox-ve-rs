@@ -1,8 +1,8 @@
 ---
 source: proxmox-ve-config/tests/fabric/main.rs
 expression: output
-snapshot_kind: text
 ---
+!
 router openfabric uwu
  net 49.0001.0000.0000.000a.00
 exit
@@ -30,5 +30,5 @@ route-map pve_openfabric6 permit 100
  set src a:b::a
 exit
 !
-ipv6 protocol openfabric route-map pve_openfabric6
 !
+ipv6 protocol openfabric route-map pve_openfabric6

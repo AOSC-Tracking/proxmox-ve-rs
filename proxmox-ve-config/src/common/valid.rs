@@ -1,5 +1,7 @@
 use std::ops::Deref;
 
+use serde::{Deserialize, Serialize};
+
 /// A wrapper type for validatable structs.
 ///
 /// It can only be constructed by implementing the [`Validatable`] type for a struct. Its contents
@@ -8,7 +10,7 @@ use std::ops::Deref;
 ///
 /// If you want to edit the content, this struct has to be unwrapped via [`Valid<T>::into_inner`].
 #[repr(transparent)]
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Valid<T>(T);
 
 impl<T> Valid<T> {

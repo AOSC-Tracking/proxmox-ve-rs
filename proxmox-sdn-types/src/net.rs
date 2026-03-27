@@ -139,7 +139,7 @@ impl Default for NetSelector {
 /// between fabrics on the same node. It contains the [`NetSystemId`] and the [`NetSelector`].
 /// e.g.: "1921.6800.1002.00"
 #[api]
-#[derive(Debug, Deserialize, Serialize, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Net {
     afi: NetAFI,
     area: NetArea,
@@ -147,6 +147,8 @@ pub struct Net {
     selector: NetSelector,
 }
 
+proxmox_serde::forward_serialize_to_display!(Net);
+proxmox_serde::forward_deserialize_to_from_str!(Net);
 
 impl UpdaterType for Net {
     type Updater = Option<Net>;
