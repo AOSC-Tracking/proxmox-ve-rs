@@ -147,7 +147,8 @@ mod tests {
         log::{LogLevel, LogRateLimitTimescale},
         rule::{Kind, RuleGroup},
         rule_match::{
-            Icmpv6, Icmpv6Code, Icmpv6Type, IpAddrMatch, IpMatch, Ports, Protocol, RuleMatch, Tcp, Udp
+            Icmpv6, Icmpv6Code, Icmpv6Type, IpAddrMatch, IpMatch, Ports, Protocol, RuleMatch, Tcp,
+            Udp,
         },
     };
 

@@ -313,7 +313,7 @@ impl Ipset {
         Ok(())
     }
 
-    pub fn ipfilter(&self) -> Option<Ipfilter> {
+    pub fn ipfilter(&self) -> Option<Ipfilter<'_>> {
         if self.name.scope() != IpsetScope::Guest {
             return None;
         }
