@@ -10,7 +10,8 @@ use proxmox_schema::{api, api_string_type, const_regex, ApiStringFormat, Updater
 
 const_regex! {
     NET_AFI_REGEX = r"^(?:[a-fA-F0-9]{2})$";
-    NET_AREA_REGEX = r"^(?:[a-fA-F0-9]{4})$";
+    // Variable length area: 0 to 13 bytes (0 to 26 hex digits) according to ISO 10589
+    NET_AREA_REGEX = r"^(?:[a-fA-F0-9]{2}){0,13}$";
     NET_SYSTEM_ID_REGEX = r"^(?:[a-fA-F0-9]{4})\.(?:[a-fA-F0-9]{4})\.(?:[a-fA-F0-9]{4})$";
     NET_SELECTOR_REGEX = r"^(?:[a-fA-F0-9]{2})$";
 }
@@ -39,9 +40,9 @@ impl UpdaterType for NetAFI {
 }
 
 api_string_type! {
-    /// Area identifier: 0001 IS-IS area number (numerical area 1)
-    /// The second part (system) of the `net` identifier. Every node has to have a different system
-    /// number.
+    /// Area identifier: Variable length (0-13 bytes / 0-26 hex digits) according to ISO 10589
+    /// IS-IS area number that identifies the routing domain. All routers in the same area must
+    /// have the same area identifier. Can be empty or up to 26 hex digits.
     #[api(format: &NET_AREA_FORMAT)]
     #[derive(Debug, Deserialize, Serialize, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
     struct NetArea(String);
@@ -146,6 +147,7 @@ pub struct Net {
     selector: NetSelector,
 }
 
+
 impl UpdaterType for Net {
     type Updater = Option<Net>;
 }
@@ -156,27 +158,58 @@ impl std::str::FromStr for Net {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.split(".").collect();
 
-        if parts.len() != 6 {
-            bail!("invalid NET format: {s}")
+        // Minimum: AFI.SystemID(3 parts).Selector = 5 parts
+        // With area: AFI.Area.SystemID(3 parts).Selector = 6+ parts
+        if parts.len() < 5 {
+            bail!("invalid NET format: {s} (expected at least AFI.SystemID.Selector)")
         }
 
-        let system = format!("{}.{}.{}", parts[2], parts[3], parts[4],);
+        // Last part is selector (2 hex digits)
+        let selector_idx = parts.len() - 1;
+        let selector = parts[selector_idx];
+
+        // Three parts before selector are system ID (xxxx.xxxx.xxxx)
+        let system_id_parts = &parts[selector_idx - 3..selector_idx];
+        let system = format!(
+            "{}.{}.{}",
+            system_id_parts[0], system_id_parts[1], system_id_parts[2]
+        );
+
+        // First part is AFI (2 hex digits)
+        let afi = parts[0];
+
+        // Everything between AFI and system ID is the area (can be empty)
+        let area_parts = &parts[1..selector_idx - 3];
+        let area = area_parts.join("");
 
         Ok(Self {
-            afi: NetAFI::from_string(parts[0].to_string())?,
-            area: NetArea::from_string(parts[1].to_string())?,
-            system: NetSystemId::from_string(system.to_string())?,
-            selector: NetSelector::from_string(parts[5].to_string())?,
+            afi: NetAFI::from_str(afi)?,
+            area: NetArea::from_string(area)?,
+            system: NetSystemId::from_string(system)?,
+            selector: NetSelector::from_str(selector)?,
         })
     }
 }
 
 impl Display for Net {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Format area with dots every 4 hex digits for readability
+        let area_str = self.area.0.as_str();
+        let area_formatted = if area_str.is_empty() {
+            String::new()
+        } else {
+            let chunks: Vec<&str> = area_str
+                .as_bytes()
+                .chunks(4)
+                .map(|chunk| std::str::from_utf8(chunk).unwrap())
+                .collect();
+            format!(".{}", chunks.join("."))
+        };
+
         write!(
             f,
-            "{}.{}.{}.{}",
-            self.afi, self.area, self.system, self.selector
+            "{}{}.{}.{}",
+            self.afi, area_formatted, self.system, self.selector
         )
     }
 }
@@ -258,8 +291,16 @@ mod tests {
         let input = "409.0001.1921.6800.1002.00";
         input.parse::<Net>().expect_err("invalid AFI");
 
-        let input = "49.00001.1921.6800.1002.00";
-        input.parse::<Net>().expect_err("invalid area");
+        // Area can now be variable length (0-26 hex digits), so 5 digits is valid
+        // but 27 digits would be invalid
+        let input = "49.0123.4567.8901.2345.6789.0123.4569.1921.6800.1002.00";
+        input
+            .parse::<Net>()
+            .expect_err("area too long (>26 hex digits)");
+
+        // Too few parts
+        let input = "49.1921.6800.00";
+        input.parse::<Net>().expect_err("not enough parts");
     }
 
     #[test]
@@ -319,5 +360,73 @@ mod tests {
         let ip4: Ipv6Addr = "a:b::0".parse().unwrap();
         let net4: Net = ip4.into();
         assert_eq!(format!("{net4}"), "49.0001.0000.0000.0000.00");
+    }
+
+    #[test]
+    fn test_net_variable_length_area() {
+        // Test with no area (just AFI)
+        let input = "49.1921.6800.1002.00";
+        let net = input.parse::<Net>().expect("should parse NET with no area");
+        assert_eq!(net.afi, NetAFI("49".to_owned()));
+        assert_eq!(net.area, NetArea("".to_owned()));
+        assert_eq!(net.system, NetSystemId("1921.6800.1002".to_owned()));
+        assert_eq!(net.selector, NetSelector("00".to_owned()));
+        assert_eq!(format!("{net}"), "49.1921.6800.1002.00");
+
+        // Test with 2 hex digit area
+        let input = "49.01.1921.6800.1002.00";
+        let net = input
+            .parse::<Net>()
+            .expect("should parse NET with 2-digit area");
+        assert_eq!(net.area, NetArea("01".to_owned()));
+        assert_eq!(format!("{net}"), "49.01.1921.6800.1002.00");
+
+        // Test with 4 hex digit area (standard)
+        let input = "49.0001.1921.6800.1002.00";
+        let net = input
+            .parse::<Net>()
+            .expect("should parse NET with 4-digit area");
+        assert_eq!(net.area, NetArea("0001".to_owned()));
+        assert_eq!(format!("{net}"), "49.0001.1921.6800.1002.00");
+
+        // Test with 8 hex digit area (formatted with dots every 4 digits)
+        let input = "49.0001.0002.1921.6800.1002.00";
+        let net = input
+            .parse::<Net>()
+            .expect("should parse NET with 8-digit area");
+        assert_eq!(net.area, NetArea("00010002".to_owned()));
+        // Should be formatted with dots every 4 hex digits
+        assert_eq!(format!("{net}"), "49.0001.0002.1921.6800.1002.00");
+
+        // Test with 12 hex digit area
+        let input = "49.0001.0002.0003.1921.6800.1002.00";
+        let net = input
+            .parse::<Net>()
+            .expect("should parse NET with 12-digit area");
+        assert_eq!(net.area, NetArea("000100020003".to_owned()));
+        assert_eq!(format!("{net}"), "49.0001.0002.0003.1921.6800.1002.00");
+
+        // Test with maximum length area (26 hex digits = 13 bytes)
+        let input = "49.0123.4567.89ab.cdef.0123.4567.89.1921.6800.1002.00";
+        let net = input
+            .parse::<Net>()
+            .expect("should parse NET with 26-digit area");
+        assert_eq!(net.area, NetArea("0123456789abcdef0123456789".to_owned()));
+        assert_eq!(
+            format!("{net}"),
+            "49.0123.4567.89ab.cdef.0123.4567.89.1921.6800.1002.00"
+        );
+
+        // Odd-length area (5 hex digits) is invalid: area must be byte-aligned
+        let input = "49.12345.1921.6800.1002.00";
+        input
+            .parse::<Net>()
+            .expect_err("odd-length area is not byte-aligned");
+
+        // Area exceeding 13 bytes (28 hex digits) must be rejected
+        let input = "49.0123.4567.89ab.cdef.0123.4567.89ab.1921.6800.1002.00";
+        input
+            .parse::<Net>()
+            .expect_err("area exceeds maximum of 13 bytes (26 hex digits)");
     }
 }
