@@ -1,0 +1,29 @@
+{% from "interface.jinja" import interface %}
+{% for router_name, router_config in openfabric.router|items %}
+!
+router openfabric {{ router_name }}
+ net {{ router_config.net }}
+exit
+{% endfor %}
+{% for interface_name, interface_config in openfabric.interfaces|items %}
+{% call interface(interface_name, interface_config.addresses_v4, interface_config.addresses_v6) %}
+{% if interface_config.fabric_id and interface_config.is_ipv4 %}
+ ip router openfabric {{ interface_config.fabric_id }}
+{% endif %}
+{% if interface_config.fabric_id and interface_config.is_ipv6 %}
+ ipv6 router openfabric {{ interface_config.fabric_id }}
+{% endif %}
+{% if interface_config.passive %}
+ openfabric passive
+{% endif %}
+{% if interface_config.hello_interval %}
+ openfabric hello-interval {{ interface_config.hello_interval}}
+{% endif %}
+{% if interface_config.hello_multiplier %}
+ openfabric hello-multiplier {{ interface_config.hello_multiplier}}
+{% endif %}
+{% if interface_config.csnp_interval %}
+ openfabric csnp-interval {{ interface_config.csnp_interval}}
+{% endif %}
+{%- endcall %}
+{%- endfor %}

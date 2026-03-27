@@ -2,6 +2,8 @@
 
 CRATES != echo proxmox-*/Cargo.toml | sed -e 's|/Cargo.toml||g'
 
+BUILDDIR = build
+
 # By default we just run checks:
 .PHONY: all
 all: check
@@ -24,6 +26,12 @@ dinstall:
 	$(MAKE) clean
 	$(MAKE) deb
 	sudo -k dpkg -i build/librust-*.deb
+
+proxmox-frr-templates-deb:
+	mkdir -p "${BUILDDIR}/proxmox-frr-templates"
+	cp -r proxmox-frr-templates/* "${BUILDDIR}/proxmox-frr-templates"
+	cd "${BUILDDIR}/proxmox-frr-templates"; dpkg-buildpackage -b -uc -us
+	touch $@
 
 %-deb:
 	./build.sh $*

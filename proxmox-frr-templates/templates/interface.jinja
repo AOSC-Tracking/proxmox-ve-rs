@@ -1,0 +1,12 @@
+{% macro interface(name, addresses_v4, addresses_v6) %}
+!
+interface {{ name }}
+{% for address in addresses_v6 %}
+ ipv6 address {{address}}
+{% endfor %}
+{% for address in addresses_v4 %}
+ ip address {{address}}
+{% endfor %}
+{{ caller() -}}
+exit
+{% endmacro %}

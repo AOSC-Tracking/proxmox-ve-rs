@@ -1,0 +1,18 @@
+{% from "interface.jinja" import interface %}
+{% if ospf.router %}
+!
+router ospf
+ ospf router-id {{ ospf.router.router_id }}
+exit
+{% endif %}
+{% for interface_name, interface_config in ospf.interfaces|items %}
+{% call interface(interface_name, interface_config.addresses_v4, interface_config.addresses_v6) %}
+ ip ospf area {{ interface_config.area }}
+{% if interface_config.passive %}
+ ip ospf passive
+{% endif %}
+{% if interface_config.network_type %}
+ ip ospf network {{ interface_config.network_type }}
+{% endif %}
+{% endcall %}
+{% endfor %}

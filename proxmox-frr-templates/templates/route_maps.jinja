@@ -1,0 +1,22 @@
+{% for name, routemap_list in routemaps | items %}
+{% for routemap in routemap_list %}
+!
+route-map {{ name }} {{ routemap.action }} {{ routemap.seq }}
+{%  for match in routemap.matches %}
+{%   if match.value.list_type == "prefixlist" %}
+ match {{ match.protocol_type }} {{ match.match_type }} prefix-list {{ match.value.list_name }}
+{%   elif match.value.list_type == "accesslist" %}
+ match {{ match.protocol_type }} {{ match.match_type }} {{ match.value.list_name }}
+{%   elif match.match_type == "next-hop" %}
+ match {{ match.protocol_type }} next-hop {{ match.value }}
+{%   endif %}
+{%  endfor %}
+{%  for set in routemap.sets %}
+ set {{ set.set_type }} {{ set.value }}
+{%  endfor %}
+{% for line in routemap.custom_frr_config %}
+{{ line }}
+{% endfor %}
+exit
+{% endfor %}
+{% endfor %}

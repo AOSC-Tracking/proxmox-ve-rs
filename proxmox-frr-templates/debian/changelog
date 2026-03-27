@@ -1,0 +1,5 @@
+proxmox-frr-templates (0.1.0-1) trixie; urgency=medium
+
+  * Initial release.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jan 2026 15:53:51 +0100

@@ -1,0 +1,17 @@
+Source: proxmox-frr-templates
+Section: admin
+Priority: important
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Build-Depends: debhelper-compat (= 13)
+Vcs-Git: git://git.proxmox.com/git/proxmox-ve-rs.git
+Vcs-Browser: https://git.proxmox.com/?p=proxmox-ve-rs.git
+Homepage: https://proxmox.com
+
+Package: proxmox-frr-templates
+Architecture: all
+Depends: ${misc:Depends}
+Description: Provides template files which are used by the Proxmox VE SDN stack
+ to generate FRR config files.
+

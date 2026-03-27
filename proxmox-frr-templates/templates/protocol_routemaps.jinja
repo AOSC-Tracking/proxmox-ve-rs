@@ -1,0 +1,10 @@
+{% for protocol_name, protocol_routemap in protocol_routemaps | items %}
+!
+{% if protocol_routemap.v4 %}
+ip protocol {{ protocol_name }} route-map {{ protocol_routemap.v4 }}
+{% endif %}
+{% if protocol_routemap.v6 %}
+!
+ipv6 protocol {{ protocol_name }} route-map {{ protocol_routemap.v6 }}
+{% endif %}
+{% endfor %}
