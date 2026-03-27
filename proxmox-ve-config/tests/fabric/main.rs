@@ -1,8 +1,9 @@
 #![cfg(feature = "frr")]
-use proxmox_frr::ser::serializer::dump;
-use proxmox_ve_config::sdn::{
-    fabric::{section_config::node::NodeId, FabricConfig},
-    frr::FrrConfigBuilder,
+use std::str::FromStr;
+
+use proxmox_frr::ser::{serializer::dump, FrrConfig};
+use proxmox_ve_config::sdn::fabric::{
+    frr::build_fabric, section_config::node::NodeId, FabricConfig,
 };
 
 mod helper;
@@ -17,20 +18,25 @@ mod helper;
 #[test]
 fn openfabric_default() {
     let config = FabricConfig::parse_section_config(helper::get_fabrics_config!()).unwrap();
-
-    let mut frr_config = FrrConfigBuilder::default()
-        .add_fabrics(config.clone())
-        .build(NodeId::from_string("pve".to_owned()).expect("invalid nodeid"))
-        .expect("error building frr config");
+    let mut frr_config = FrrConfig::default();
+    build_fabric(
+        NodeId::from_str("pve").expect("invalid nodeid"),
+        config.clone(),
+        &mut frr_config,
+    )
+    .unwrap();
 
     let mut output = dump(&frr_config).expect("error dumping stuff");
 
     insta::assert_snapshot!(helper::reference_name!("pve"), output);
 
-    frr_config = FrrConfigBuilder::default()
-        .add_fabrics(config.clone())
-        .build(NodeId::from_string("pve1".to_owned()).expect("invalid nodeid"))
-        .expect("error building frr config");
+    frr_config = FrrConfig::default();
+    build_fabric(
+        NodeId::from_str("pve1").expect("invalid nodeid"),
+        config,
+        &mut frr_config,
+    )
+    .unwrap();
 
     output = dump(&frr_config).expect("error dumping stuff");
 
@@ -40,20 +46,26 @@ fn openfabric_default() {
 #[test]
 fn ospf_default() {
     let config = FabricConfig::parse_section_config(helper::get_fabrics_config!()).unwrap();
+    let mut frr_config = FrrConfig::default();
 
-    let mut frr_config = FrrConfigBuilder::default()
-        .add_fabrics(config.clone())
-        .build(NodeId::from_string("pve".to_owned()).expect("invalid nodeid"))
-        .expect("error building frr config");
+    build_fabric(
+        NodeId::from_str("pve").expect("invalid nodeid"),
+        config.clone(),
+        &mut frr_config,
+    )
+    .unwrap();
 
     let mut output = dump(&frr_config).expect("error dumping stuff");
 
     insta::assert_snapshot!(helper::reference_name!("pve"), output);
 
-    frr_config = FrrConfigBuilder::default()
-        .add_fabrics(config)
-        .build(NodeId::from_string("pve1".to_owned()).expect("invalid nodeid"))
-        .expect("error building frr config");
+    frr_config = FrrConfig::default();
+    build_fabric(
+        NodeId::from_str("pve1").expect("invalid nodeid"),
+        config,
+        &mut frr_config,
+    )
+    .unwrap();
 
     output = dump(&frr_config).expect("error dumping stuff");
 
@@ -87,11 +99,14 @@ fn ospf_loopback_prefix_fail() {
 #[test]
 fn openfabric_multi_fabric() {
     let config = FabricConfig::parse_section_config(helper::get_fabrics_config!()).unwrap();
+    let mut frr_config = FrrConfig::default();
 
-    let frr_config = FrrConfigBuilder::default()
-        .add_fabrics(config)
-        .build(NodeId::from_string("pve1".to_owned()).expect("invalid nodeid"))
-        .expect("error building frr config");
+    build_fabric(
+        NodeId::from_str("pve1").expect("invalid nodeid"),
+        config,
+        &mut frr_config,
+    )
+    .unwrap();
 
     let output = dump(&frr_config).expect("error dumping stuff");
 
@@ -101,12 +116,14 @@ fn openfabric_multi_fabric() {
 #[test]
 fn ospf_multi_fabric() {
     let config = FabricConfig::parse_section_config(helper::get_fabrics_config!()).unwrap();
+    let mut frr_config = FrrConfig::default();
 
-    let frr_config = FrrConfigBuilder::default()
-        .add_fabrics(config)
-        .build(NodeId::from_string("pve1".to_owned()).expect("invalid nodeid"))
-        .expect("error building frr config");
-
+    build_fabric(
+        NodeId::from_str("pve1").expect("invalid nodeid"),
+        config,
+        &mut frr_config,
+    )
+    .unwrap();
     let output = dump(&frr_config).expect("error dumping stuff");
 
     insta::assert_snapshot!(helper::reference_name!("pve1"), output);
@@ -115,11 +132,14 @@ fn ospf_multi_fabric() {
 #[test]
 fn openfabric_dualstack() {
     let config = FabricConfig::parse_section_config(helper::get_fabrics_config!()).unwrap();
+    let mut frr_config = FrrConfig::default();
 
-    let frr_config = FrrConfigBuilder::default()
-        .add_fabrics(config)
-        .build(NodeId::from_string("pve".to_owned()).expect("invalid nodeid"))
-        .expect("error building frr config");
+    build_fabric(
+        NodeId::from_str("pve").expect("invalid nodeid"),
+        config,
+        &mut frr_config,
+    )
+    .unwrap();
 
     let output = dump(&frr_config).expect("error dumping stuff");
 
@@ -129,11 +149,14 @@ fn openfabric_dualstack() {
 #[test]
 fn openfabric_ipv6_only() {
     let config = FabricConfig::parse_section_config(helper::get_fabrics_config!()).unwrap();
+    let mut frr_config = FrrConfig::default();
 
-    let frr_config = FrrConfigBuilder::default()
-        .add_fabrics(config)
-        .build(NodeId::from_string("pve".to_owned()).expect("invalid nodeid"))
-        .expect("error building frr config");
+    build_fabric(
+        NodeId::from_str("pve").expect("invalid nodeid"),
+        config,
+        &mut frr_config,
+    )
+    .unwrap();
 
     let output = dump(&frr_config).expect("error dumping stuff");
 

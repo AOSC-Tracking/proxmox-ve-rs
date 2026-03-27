@@ -1,7 +1,5 @@
 pub mod config;
 pub mod fabric;
-#[cfg(feature = "frr")]
-pub mod frr;
 pub mod ipam;
 
 use std::{error::Error, fmt::Display, str::FromStr};
