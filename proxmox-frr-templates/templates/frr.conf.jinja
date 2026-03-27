@@ -1,4 +1,7 @@
 {% include "isisd.jinja" %}
+{% for line in custom_frr_config %}
+{{ line }}
+{% endfor %}
 {% include "fabricd.jinja" %}
 {% include "ospfd.jinja" %}
 {% include "access_lists.jinja" %}

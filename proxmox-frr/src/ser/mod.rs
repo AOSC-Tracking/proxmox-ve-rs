@@ -200,6 +200,8 @@ pub struct FrrConfig {
     pub routemaps: BTreeMap<RouteMapName, Vec<RouteMapEntry>>,
     #[serde(default)]
     pub access_lists: BTreeMap<AccessListName, Vec<AccessListRule>>,
+    #[serde(default)]
+    pub custom_frr_config: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
