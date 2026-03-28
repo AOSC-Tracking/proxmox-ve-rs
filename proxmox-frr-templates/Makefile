@@ -15,11 +15,11 @@ all: deb
 deb: $(DEBS)
 
 $(BUILDDIR):
-	rm -rf $(BUILDDIR)
-	mkdir -p $(BUILDDIR)
-	cp -a debian $(BUILDDIR)/
-	cp -a templates $(BUILDDIR)/ || true
-	echo "git clone git://git.proxmox.com/git/proxmox-ve-rs.git\\ngit checkout $(GITVERSION)" > $(BUILDDIR)/debian/SOURCE
+	rm -rf $@ $@.tmp
+	mkdir -p $@.tmp
+	cp -a -t $@.tmp debian templates
+	echo "git clone git://git.proxmox.com/git/proxmox-ve-rs.git\\ngit checkout $(GITVERSION)" > $@.tmp/debian/SOURCE
+	mv $@.tmp $@
 
 $(PVE_DEB): $(BUILDDIR)
 	cd $(BUILDDIR); dpkg-buildpackage -b -uc -us
