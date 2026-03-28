@@ -1,3 +1,21 @@
+rust-proxmox-frr (0.3.0-1) trixie; urgency=medium
+
+  * switch FRR config serialization from line-by-line Rust code to jinja
+    template rendering, with templates included on compile time from the new
+    proxmox-frr-templates package.
+
+  * add BGP configuration types including routers, neighbor groups, address
+    families, VRFs, and EVPN support.
+
+  * add IS-IS configuration types and templates.
+
+  * add support for custom FRR configuration lines, prefix lists, ip
+    routes, and protocol route-maps.
+
+  * make FrrConfig serde-serializable for Perl interop.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 28 Mar 2026 17:29:24 +0100
+
 rust-proxmox-frr (0.2.1-1) trixie; urgency=medium
 
   * update proxmox-network-types from 0.1 to 1.

@@ -11,7 +11,7 @@ Build-Depends-Arch: cargo:native <!nocheck>,
  librust-minijinja-2+loader-dev (>= 2.5-~~) <!nocheck>,
  librust-minijinja-2+multi-template-dev (>= 2.5-~~) <!nocheck>,
  librust-proxmox-network-types-1+default-dev (>= 1.0.1-~~) <!nocheck>,
- librust-proxmox-sdn-types-0.1+default-dev <!nocheck>,
+ librust-proxmox-sdn-types-0.2+default-dev <!nocheck>,
  librust-proxmox-serde-1+default-dev <!nocheck>,
  librust-proxmox-sortable-macro-1+default-dev <!nocheck>,
  librust-serde-1+default-dev <!nocheck>,
@@ -36,7 +36,7 @@ Depends:
  librust-minijinja-2+loader-dev (>= 2.5-~~),
  librust-minijinja-2+multi-template-dev (>= 2.5-~~),
  librust-proxmox-network-types-1+default-dev (>= 1.0.1-~~),
- librust-proxmox-sdn-types-0.1+default-dev,
+ librust-proxmox-sdn-types-0.2+default-dev,
  librust-proxmox-serde-1+default-dev,
  librust-proxmox-sortable-macro-1+default-dev,
  librust-serde-1+default-dev,
@@ -48,9 +48,9 @@ Provides:
  librust-proxmox-frr+default-dev (= ${binary:Version}),
  librust-proxmox-frr-0-dev (= ${binary:Version}),
  librust-proxmox-frr-0+default-dev (= ${binary:Version}),
- librust-proxmox-frr-0.2-dev (= ${binary:Version}),
- librust-proxmox-frr-0.2+default-dev (= ${binary:Version}),
- librust-proxmox-frr-0.2.1-dev (= ${binary:Version}),
- librust-proxmox-frr-0.2.1+default-dev (= ${binary:Version})
+ librust-proxmox-frr-0.3-dev (= ${binary:Version}),
+ librust-proxmox-frr-0.3+default-dev (= ${binary:Version}),
+ librust-proxmox-frr-0.3.0-dev (= ${binary:Version}),
+ librust-proxmox-frr-0.3.0+default-dev (= ${binary:Version})
 Description: Rust types for the FRR configuration file - Rust source code
  Source code for Debianized Rust crate "proxmox-frr"
