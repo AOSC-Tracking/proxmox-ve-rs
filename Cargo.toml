@@ -27,5 +27,5 @@ thiserror = "2.0.0"
 proxmox-frr = { version = "0.2", path = "proxmox-frr" }
 proxmox-network-types = { version = "1.0.1" }
 proxmox-schema = { version = "5" }
-proxmox-sdn-types = { version = "0.1", path = "proxmox-sdn-types" }
+proxmox-sdn-types = { version = "0.2", path = "proxmox-sdn-types" }
 proxmox-serde = { version = "1.0.0" }
