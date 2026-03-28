@@ -4,7 +4,7 @@ PACKAGE=proxmox-frr-templates
 
 GITVERSION:=$(shell git rev-parse HEAD)
 
-BUILDDIR ?= build/$(PACKAGE)-$(DEB_VERSION)
+BUILDDIR ?= $(PACKAGE)-$(DEB_VERSION)
 DSC=$(PACKAGE)_$(DEB_VERSION).dsc
 
 PVE_DEB=$(PACKAGE)_$(DEB_VERSION_UPSTREAM_REVISION)_all.deb
@@ -23,28 +23,28 @@ $(BUILDDIR):
 
 $(PVE_DEB): $(BUILDDIR)
 	cd $(BUILDDIR); dpkg-buildpackage -b -uc -us
-	lintian build/$(DEBS)
+	lintian $(DEBS)
 
 dsc: $(DSC)
 	$(MAKE) clean
 	$(MAKE) $(DSC)
-	lintian build/$(DSC)
+	lintian $(DSC)
 
 $(DSC): $(BUILDDIR)
 	cd $(BUILDDIR); dpkg-buildpackage -S -uc -us
 
 sbuild: $(DSC)
-	sbuild build/$(DSC)
+	sbuild $(DSC)
 
 .PHONY: upload
 upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
 upload: $(DEBS)
-	tar cf - build/$(DEBS)|ssh repoman@repo.proxmox.com -- upload --product devel --dist $(UPLOAD_DIST)
+	tar cf - $(DEBS)|ssh repoman@repo.proxmox.com -- upload --product devel --dist $(UPLOAD_DIST)
 
 .PHONY: distclean
 distclean: clean
 
 .PHONY: clean
 clean:
-	rm -rf build
-
+	rm -rf $(BUILDDIR) $(PACKAGE)-[0-9]*/
+	rm -f *.deb *.dsc *.build *.buildinfo *.changes $(PACKAGE)*.tar.*
