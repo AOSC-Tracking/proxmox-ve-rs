@@ -1,4 +1,4 @@
-proxmox-frr-templates (0.1.0-1) trixie; urgency=medium
+proxmox-frr-templates (0.1.0) trixie; urgency=medium
 
   * Initial release.
 
