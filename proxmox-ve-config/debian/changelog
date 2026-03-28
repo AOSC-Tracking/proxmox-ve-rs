@@ -1,3 +1,11 @@
+rust-proxmox-ve-config (0.5.0) trixie; urgency=medium
+
+  * frr: replace FrrConfigBuilder with direct build_fabric call that takes a
+    mutable FrrConfig, to allow the Perl side to pre-populate controller
+    config before fabric generation.
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 28 Mar 2026 17:34:08 +0100
+
 rust-proxmox-ve-config (0.4.7) trixie; urgency=medium
 
   * update proxmox-network-types from 0.1 to 1.
