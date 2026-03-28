@@ -45,22 +45,6 @@ impl AccessListName {
     }
 }
 
-/// A FRR access-list.
-///
-/// Holds a vec of rules. Each rule will get its own line, FRR will collect all the rules with the
-/// same name and combine them.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct AccessList {
-    pub name: AccessListName,
-    pub rules: Vec<AccessListRule>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct PrefixList {
-    pub name: PrefixListName,
-    pub rules: Vec<PrefixListRule>,
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct PrefixListRule {
     pub action: AccessAction,
