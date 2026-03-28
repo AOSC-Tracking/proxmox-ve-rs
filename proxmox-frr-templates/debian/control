@@ -12,6 +12,7 @@ Homepage: https://proxmox.com
 Package: proxmox-frr-templates
 Architecture: all
 Depends: ${misc:Depends}
-Description: Provides template files which are used by the Proxmox VE SDN stack
- to generate FRR config files.
+Description: FRR templatd for the Proxmox VE SDN stack
+ Provides template files which are used by the Proxmox VE SDN stack to generate
+ FRR config files.
 
