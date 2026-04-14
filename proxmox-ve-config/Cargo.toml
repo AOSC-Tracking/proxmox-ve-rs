@@ -22,10 +22,10 @@ proxmox-frr = { workspace = true, optional = true }
 proxmox-network-types = { workspace = true, features = [ "api-types" ] }
 proxmox-schema = { workspace = true, features = [ "api-types" ] }
 proxmox-sdn-types = { workspace = true }
-proxmox-section-config = { version = "3" }
+proxmox-section-config = { git = "https://github.com/AOSC-Tracking/proxmox", package = "proxmox-section-config",  rev = "0d7535f9ba84f2995a6fe5fd82870c9c149234cc" }
 proxmox-serde = { workspace = true, features = [ "perl" ]}
-proxmox-sys = "1"
-proxmox-sortable-macro = "1"
+proxmox-sys = {  git = "https://github.com/AOSC-Tracking/proxmox", package = "proxmox-sys",  rev = "0d7535f9ba84f2995a6fe5fd82870c9c149234cc" }
+proxmox-sortable-macro = {  git = "https://github.com/AOSC-Tracking/proxmox", package = "proxmox-sortable-macro",  rev = "0d7535f9ba84f2995a6fe5fd82870c9c149234cc" }
 
 [features]
 frr = ["dep:proxmox-frr"]

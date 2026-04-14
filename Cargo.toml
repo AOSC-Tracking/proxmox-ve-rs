@@ -25,7 +25,7 @@ serde = { version = "1" }
 thiserror = "2.0.0"
 
 proxmox-frr = { version = "0.3", path = "proxmox-frr" }
-proxmox-network-types = { version = "1.0.1" }
-proxmox-schema = { version = "5" }
+proxmox-network-types = { git = "https://github.com/AOSC-Tracking/proxmox", package = "proxmox-network-types", rev = "0d7535f9ba84f2995a6fe5fd82870c9c149234cc" }
+proxmox-schema = { git = "https://github.com/AOSC-Tracking/proxmox", package = "proxmox-schema", rev = "0d7535f9ba84f2995a6fe5fd82870c9c149234cc" }
 proxmox-sdn-types = { version = "0.2", path = "proxmox-sdn-types" }
-proxmox-serde = { version = "1.0.0" }
+proxmox-serde = {  git = "https://github.com/AOSC-Tracking/proxmox", package = "proxmox-serde", rev = "0d7535f9ba84f2995a6fe5fd82870c9c149234cc"  }

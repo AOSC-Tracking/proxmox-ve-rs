@@ -20,4 +20,5 @@ minijinja = { version = "2.5", features = [ "multi_template", "loader" ] }
 proxmox-network-types = { workspace = true }
 proxmox-sdn-types = { workspace = true }
 proxmox-serde = { workspace = true }
-proxmox-sortable-macro = "1"
+proxmox-sortable-macro = {  git = "https://github.com/AOSC-Tracking/proxmox", package = "proxmox-sortable-macro",  rev = "0d7535f9ba84f2995a6fe5fd82870c9c149234cc" }
+
